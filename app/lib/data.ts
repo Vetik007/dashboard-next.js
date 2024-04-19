@@ -1,4 +1,6 @@
-import { sql } from '@vercel/postgres';
+import { unstable_noStore as noStore } from 'next/cache'; // импортируем функцию unstable_noStore из модуля next/cache которая используется для указания, что данные, полученные из запроса, не должны кэшироваться.
+
+import { sql } from '@vercel/postgres'; // функция sql из пакета @vercel/postgres, которая используется для выполнения запросов к базе данных PostgreSQL.
 import {
   CustomerField,
   CustomersTableType,
@@ -13,6 +15,8 @@ import { formatCurrency } from './utils';
 export async function fetchRevenue() {
   // Add noStore() here to prevent the response from being cached.
   // This is equivalent to in fetch(..., {cache: 'no-store'}).
+
+  noStore() // вызов функции noStore, чтобы указать, что данные, полученные из запроса, не должны кэшироваться
 
   try {
     // Artificially delay a response for demo purposes.
@@ -33,6 +37,8 @@ export async function fetchRevenue() {
 }
 
 export async function fetchLatestInvoices() {
+
+  noStore() // вызов функции noStore, чтобы указать, что данные, полученные из запроса, не должны кэшироваться
   try {
     const data = await sql<LatestInvoiceRaw>`
       SELECT invoices.amount, customers.name, customers.image_url, customers.email, invoices.id
@@ -53,6 +59,7 @@ export async function fetchLatestInvoices() {
 }
 
 export async function fetchCardData() {
+  noStore()
   try {
     // You can probably combine these into a single SQL query
     // However, we are intentionally splitting them to demonstrate
@@ -92,6 +99,7 @@ export async function fetchFilteredInvoices(
   query: string,
   currentPage: number,
 ) {
+  noStore()
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
   try {
@@ -124,6 +132,7 @@ export async function fetchFilteredInvoices(
 }
 
 export async function fetchInvoicesPages(query: string) {
+  noStore()
   try {
     const count = await sql`SELECT COUNT(*)
     FROM invoices
@@ -145,6 +154,7 @@ export async function fetchInvoicesPages(query: string) {
 }
 
 export async function fetchInvoiceById(id: string) {
+  noStore()
   try {
     const data = await sql<InvoiceForm>`
       SELECT
@@ -170,6 +180,7 @@ export async function fetchInvoiceById(id: string) {
 }
 
 export async function fetchCustomers() {
+  noStore()
   try {
     const data = await sql<CustomerField>`
       SELECT
@@ -188,6 +199,7 @@ export async function fetchCustomers() {
 }
 
 export async function fetchFilteredCustomers(query: string) {
+  noStore()
   try {
     const data = await sql<CustomersTableType>`
 		SELECT
@@ -229,3 +241,34 @@ export async function getUser(email: string) {
     throw new Error('Failed to fetch user.');
   }
 }
+
+
+/**
+ *? функция unstable_noStore из модуля next/cache используется в Next.js для управления кэшированием данных. Она позволяет явно указать, что данные, полученные из запроса, не должны кэшироваться.
+ * 
+ * Когда используется функция noStore(), это означает, что при получении данных они не будут сохранены в кэше. Это может быть полезно в случае, когда нужно убедиться, что каждый запрос к данным будет получать актуальную версию, без использования данных из кэша.
+ * 
+ * Например, если есть данные, которые могут часто изменяться и необходимо получать самые свежие данные при каждом запросе, можно использовать noStore() для того, чтобы убедиться, что данные не кэшируются и всегда запрашиваются заново.
+ * 
+ * Это особенно важно в контексте SSR (Server-Side Rendering) и SSG (Static Site Generation), где результаты запросов могут кэшироваться для улучшения производительности, но при этом необходимо учитывать, что данные могут устареть и должны быть перезапрошены при каждом обновлении страницы или при определенных событиях. 
+ * 
+ */
+
+/**
+ *? вместо noStore() можно использовать export const dynamic = "force-dynamic"
+ * 
+ * Имя dynamic может быть использовано для указания на то, что какой-то элемент или модуль должен быть загружен динамически, а не статически. Значение "force-dynamic" может быть интерпретировано как сигнал для системы сборки (например, при использовании инструментов типа Webpack или Next.js), чтобы динамически загрузить соответствующий ресурс или модуль, вместо того чтобы включать его статически в итоговый бандл приложения.
+
+Динамическая загрузка может быть полезной, когда некоторые ресурсы или модули не требуются при инициализации приложения, но могут потребоваться во время выполнения при определенных условиях или событиях. Это помогает ускорить начальную загрузку приложения и улучшить его производительность.
+ * 
+ ** noStore():
+ - Используется для управления кэшированием данных в Next.js.
+ - Это позволяет явно указать, что данные не должны кэшироваться.
+ - Подходит, когда необходимо обеспечить, чтобы данные всегда запрашивались заново и не использовались из кэша.
+
+**dynamic = "force-dynamic":
+ - Используется для указания, что определенный ресурс или модуль должен быть загружен динамически, а не статически.
+ - Это может быть полезно для динамической загрузки ресурсов, которые не нужны при инициализации приложения, но могут потребоваться позже.
+ - Подходит, когда нужно оптимизировать начальную загрузку приложения, загружая некоторые ресурсы только по мере необходимости.
+ * 
+ */
