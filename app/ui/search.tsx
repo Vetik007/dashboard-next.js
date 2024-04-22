@@ -46,6 +46,7 @@ export default function Search({ placeholder }: { placeholder: string }) {
   const handleSearch = useDebouncedCallback((inputValue) => {
     console.log('inputValue:', inputValue);
     const params = new URLSearchParams(searchParams);
+    params.set('page', '1'); // когда пользователь вводит новый поисковый запрос сбрасываем номер страницы на "1"
 
     if (inputValue) {
       params.set('query', inputValue);
