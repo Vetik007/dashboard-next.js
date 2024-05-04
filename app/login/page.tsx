@@ -1,5 +1,12 @@
+import { Metadata } from 'next';
+
 import AcmeLogo from '../ui/acme-logo';
 import LoginForm from '../ui/login-form';
+
+export const metadata: Metadata = {
+  title: 'Login',
+  // title: { absolute: 'Dashboard/customers' },
+};
 
 export default function LoginPage() {
   return (
@@ -15,3 +22,8 @@ export default function LoginPage() {
     </main>
   );
 }
+
+/**
+ * Электронная почта:user@nextmail.com
+ * Пароль:123456
+ */
